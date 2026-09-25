@@ -106,6 +106,20 @@ app.post('/api/scan', (req, res) => {
     details: result
   });
 });
-app.listen(3000, '0.0.0.0', () => {
-  console.log("🚀 Serveur AutoCheck V2 (GPS & Export) prêt sur le port 3000 !");
+res.json({
+        status: result.status,
+        message: result.message,
+        details: result
+    });
+});
+
+// Route d'accueil pour tester que le serveur répond correctement
+app.get('/', (req, res) => {
+    res.send('Serveur AutoCheck fonctionnel !');
+});
+
+// Écoute sur le port attribué par Render ou 3000 en local
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Serveur AutoCheck V2 (GPS & Export) prêt sur le port ${PORT} !`);
 });
