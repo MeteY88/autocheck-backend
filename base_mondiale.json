@@ -1,0 +1,44 @@
+[
+  {
+    "plate": "DP-953-ZB",
+    "country": "FR",
+    "model": "Peugeot 508",
+    "color": "Gris"
+  },
+  {
+    "plate": "AA-123-BB",
+    "country": "FR",
+    "model": "Renault Clio",
+    "color": "Noir"
+  },
+  {
+    "plate": "1-XYZ-99",
+    "country": "BE",
+    "model": "Audi A3",
+    "color": "Blanc"
+  },
+  {
+    "plate": "M-AB-1234",
+    "country": "DE",
+    "model": "BMW Série 3",
+    "color": "Bleu"
+  },
+  {
+    "plate": "7ABC123",
+    "country": "US",
+    "model": "Ford Mustang",
+    "color": "Rouge"
+  },
+  {
+    "plate": "6123-HB",
+    "country": "ES",
+    "model": "SEAT Leon",
+    "color": "Gris"
+  },
+  {
+    "plate": "AB12CDE",
+    "country": "GB",
+    "model": "Jaguar XE",
+    "color": "Vert"
+  }
+]
