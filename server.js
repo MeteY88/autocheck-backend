@@ -45,40 +45,56 @@ app.get('/api/export-csv', (req, res) => {
 });
 
 // 3. Réception du Scan avec GPS
+
 app.post('/api/scan', (req, res) => {
   const { plate, lat, lng } = req.body;
   const plaqueLue = plate ? plate.toUpperCase().replace(/\s+/g, '') : "";
   const timestamp = new Date().toLocaleTimeString('fr-FR');
 
-  const vehiculeTrouve = registreMondial.find(v => v.plate === plaqueLue);
-  const dejaScanne = historiqueScans.filter(s => s.plate === plaqueLue);
-
   let result = {
     id: Date.now(),
     time: timestamp,
     plate: plaqueLue,
+    country: "FR",
+    model: "-",
+    color: "-",
     lat: lat || null,
     lng: lng || null
   };
 
-  if (!vehiculeTrouve) {
+  // 1. Validation de la syntaxe/format (Ex: SIV Français AA-123-AA)
+  const regexSIV = /^[A-Z]{2}\d{3}[A-Z]{2}$/;
+  const estValideFormat = regexSIV.test(plaqueLue.replace(/-/g, ''));
+
+  // 2. Détection de Doublette par GPS
+  const dernierScan = historiqueScans.find(s => s.plate === plaqueLue);
+  let estDoublette = false;
+
+  if (dernierScan && lat && lng && dernierScan.lat && dernierScan.lng) {
+    const distanceKm = Math.hypot(lat - dernierScan.lat, lng - dernierScan.lng) * 111;
+    if (distanceKm > 5) {
+      estDoublette = true;
+    }
+  }
+
+  // Attribution du statut
+  if (!estValideFormat) {
     result.status = "FAUSSE";
-    result.country = "-";
-    result.model = "Non répertorié";
-    result.color = "-";
-    result.message = "🚨 FAUSSE PLAQUE DÉTECTÉE !";
-  } else if (dejaScanne.length > 0) {
+    result.message = "🚨 FAUSSE PLAQUE (Format non conforme) !";
+  } else if (estDoublette) {
     result.status = "DOUBLETTE";
-    result.country = vehiculeTrouve.country;
-    result.model = vehiculeTrouve.model;
-    result.color = vehiculeTrouve.color;
-    result.message = "⚠️ SUSPICION DE DOUBLETTE !";
+    result.message = "⚠️ SUSPICION DE DOUBLETTE (Position incohérente) !";
   } else {
     result.status = "VALIDE";
-    result.country = vehiculeTrouve.country;
-    result.model = vehiculeTrouve.model;
-    result.color = vehiculeTrouve.color;
-    result.message = "✅ PLAQUE AUTHENTIQUE";
+    result.message = "✅ PLAQUE CONFORME";
+  }
+
+  // Enrichissement optionnel si la plaque existe dans base_mondiale.json
+  const vehiculeTrouve = registreMondial.find(v => v.plate === plaqueLue);
+  if (vehiculeTrouve) {
+    result.country = vehiculeTrouve.country || result.country;
+    result.model = vehiculeTrouve.model || result.model;
+    result.color = vehiculeTrouve.color || result.color;
   }
 
   historiqueScans.unshift(result);
@@ -90,7 +106,6 @@ app.post('/api/scan', (req, res) => {
     details: result
   });
 });
-
 app.listen(3000, '0.0.0.0', () => {
   console.log("🚀 Serveur AutoCheck V2 (GPS & Export) prêt sur le port 3000 !");
 });
